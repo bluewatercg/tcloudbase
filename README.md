@@ -1,8 +1,10 @@
-# tcloudbase
-作业4
-将教程范例（意见反馈平台DEMO）中的管理端部分的列表加载变成实时数据库监听形式触发。
+## tcloudbase
+
+##作业4
+* 将教程范例（意见反馈平台DEMO）中的管理端部分的列表加载变成实时数据库监听形式触发。？
 
 
+```javascript
 /**
  * 加载意见列表（调用云函数：init）
  */
@@ -31,9 +33,11 @@ function initlist() {
             }
         })
 }
+```
+ 
+* 用户端列表加载云函数适配超过100条的场景，采用promise all的形式进行改造，使其可以支持超过100条
 
-用户端列表加载云函数适配超过100条的场景，采用promise all的形式进行改造，使其可以支持超过100条
-
+```javascript
 const pagesize = 100;
 exports.main = async (event, context) => {
   let res = {};
@@ -68,3 +72,45 @@ exports.main = async (event, context) => {
       else{
         res.code = 1;
       }
+```
+
+
+##作业5 
+* 将教程范例的cloudtohttp函数使用sdk的getTempFileURL进行替换。
+* util.js
+
+```javascript
+    async function cloudtohttp(src) {
+    if(src==""){
+        return "";
+    }
+    let result = await cloud.getTempFileURL({
+        fileList: [src]
+    }).then(rs=>{
+        return rs
+    })
+    return result.fileList[0].tempFileURL;
+    
+    }
+
+```
+
+* index.js
+```javascript
+/**
+ * 重新渲染意见列表
+ * @param Array list 意见列表
+ */
+async function refreshlist(list){
+ ....
+    for(let n in tempitem.imgs){
+        let img = document.createElement('img');
+        img.src = await cloudtohttp(tempitem.imgs[n]);
+        img.setAttribute('onclick', 'previewnetimg("' + img.src + '")');
+        itemimages.appendChild(img);
+    }
+ ....
+    }
+}
+```
+
