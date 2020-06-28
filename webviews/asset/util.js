@@ -1,8 +1,4 @@
-<<<<<<< HEAD
  
-
-=======
->>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
 /**
  * 隐藏全屏图片
  */
@@ -21,7 +17,7 @@ function previewnetimg(src){
     preview.parentNode.style = "";
 }
 
-<<<<<<< HEAD
+ 
 async function cloudtohttp(src) {
     if(src==""){
         return "";
@@ -33,15 +29,7 @@ async function cloudtohttp(src) {
     })
     return result.fileList[0].tempFileURL;
     
-=======
-function cloudtohttp(src) {
-    if(src==""){
-        return "";
-    }
-    let first=src.indexOf('.');
-    let end=src.indexOf('/',first);
-    return 'https://'+src.slice(first+1,end)+'.tcb.qcloud.la/'+src.slice(end+1,src.length);
->>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
+ 
 }
 
 function dateFormat(fmt, date) {
