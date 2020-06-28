@@ -36,30 +36,27 @@ function signInAnonymously() {
 /**
  * 加载意见列表（调用云函数：init）
  */
-function initlist() {
-    const db = cloud.database()
-    const _ = db.command
-    db.collection('advice')
-        // 获取反馈不为空的数据
-        .where({
-            advice: _.neq("")
-        })
-        // 实时推送
-        // 获取结果为 0 时需要清除浏览器缓存和 cookie
-        .watch({
-            onChange: res => {
-                console.log(res.docs);
-                // 处理日期对象显示异常
-                let list = res.docs.map(item => {
-                    item.adddue = new Date(item.adddue.$date);
-                    return item;
-                })
-                refreshlist(list)
-            },
-            onError: err => {
-                console.error(err);
-            }
-        })
+function initlist(){
+    // cloud.callFunction({
+    //     name: 'init'
+    // })
+    // .then((res) => {
+    //     refreshlist(res.result.list);
+    // });
+    cloud.database().collection('advice').where({
+        _openid:uid
+    }).watch({
+        onChange:function(res){
+            let list = res.docs.map(item=>{
+                item.adddue = new Date(item.adddue.$date);
+                return item;
+            })
+            refreshlist(list);
+        },
+        onError:function(err){
+            console.log(err);
+        }
+    });
 }
 
 /**
@@ -68,13 +65,20 @@ function initlist() {
  */
 function deladvice(id){
     if(confirm('是否要删除这个意见？')){
+        const tempimgs = advicelist[id].imgs;
         cloud.database().collection('advice').where({
             _id:id
         }).remove(
         function(err, res) {
-            let tempimgs = advicelist[id].imgs;
             if(tempimgs!=null && tempimgs.length!=0){
                 //删除图片
+                cloud.deleteFile({
+                    fileList: tempimgs
+                  })
+                  .then(res => {
+                      alert('删除成功！');
+                    //   initlist()
+                  });
             }
             else{
                 alert('删除成功！');
@@ -98,7 +102,7 @@ function cloudCheck(){
  * 重新渲染意见列表
  * @param Array list 意见列表
  */
-function refreshlist(list){
+async function refreshlist(list){
     let el = document.getElementById("list");
     el.innerHTML="";
     advicelist = {};
@@ -127,17 +131,17 @@ function refreshlist(list){
 
             for(let n in tempitem.imgs){
                 let img = document.createElement('img');
-                img.src = cloudtohttp(tempitem.imgs[n]);
-                img.setAttribute('onclick','previewnetimg("'+img.src+'")');
+                img.src = await cloudtohttp(tempitem.imgs[n]);
+                img.setAttribute('onclick', 'previewnetimg("' + img.src + '")');
                 itemimages.appendChild(img);
             }
             listitem.appendChild(itemimages);
         }
 
-        let itemdate = document.createElement('div');
-        itemdate.setAttribute('class','list-item-date');
-        itemdate.innerText = dateFormat("YYYY-mm-dd HH:MM",new Date(tempitem.adddue));
-        listitem.appendChild(itemdate);
+        // let itemdate = document.createElement('div');
+        // itemdate.setAttribute('class','list-item-date');
+        // itemdate.innerText = dateFormat("YYYY-mm-dd HH:MM",new Date(tempitem.adddue));
+        // listitem.appendChild(itemdate);
 
         let itemdel = document.createElement('div');
         itemdel.setAttribute('class','list-item-del');
@@ -286,13 +290,13 @@ function resetInput(){
  */
 function submittext(){
     let imgs=[];
-    // console.log(imagearray);
-    // for(let item in imagearray){
-    //     if(imagearray[item].upload!=true){
-    //         return;
-    //     }
-    //     imgs.push(imagearray[item].cloud);
-    // }
+    console.log(imagearray);
+    for(let item in imagearray){
+        if(imagearray[item].upload!=true){
+            return;
+        }
+        imgs.push(imagearray[item].cloud);
+    }
     let number = document.getElementById('number').value;
     let advicetext = document.getElementById('advicetext').value;
     console.log(advicetext,number);
@@ -316,5 +320,15 @@ function submittext(){
  * @param {*} check 
  */
 function cloudupload(file,check){
-    submittext();
+    cloud.uploadFile({
+        cloudPath: 'advice/'+uid+'/'+file.lastModified+'-'+file.name,
+        filePath: file
+    },
+    function(err, res){
+        if(res){
+            imagearray[file.lastModified].upload = true;
+            imagearray[file.lastModified].cloud = res.fileID;
+            submittext();
+        }
+    });
 }

@@ -1,3 +1,5 @@
+ 
+
 /**
  * 隐藏全屏图片
  */
@@ -16,13 +18,17 @@ function previewnetimg(src){
     preview.parentNode.style = "";
 }
 
-function cloudtohttp(src) {
+async function cloudtohttp(src) {
     if(src==""){
         return "";
     }
-    let first=src.indexOf('.');
-    let end=src.indexOf('/',first);
-    return 'https://'+src.slice(first+1,end)+'.tcb.qcloud.la/'+src.slice(end+1,src.length);
+    let result = await cloud.getTempFileURL({
+        fileList: [src]
+    }).then(rs=>{
+        return rs
+    })
+    return result.fileList[0].tempFileURL;
+    
 }
 
 function dateFormat(fmt, date) {
