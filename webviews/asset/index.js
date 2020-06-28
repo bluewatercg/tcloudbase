@@ -36,6 +36,7 @@ function signInAnonymously() {
 /**
  * 加载意见列表（调用云函数：init）
  */
+<<<<<<< HEAD
 function initlist(){
     // cloud.callFunction({
     //     name: 'init'
@@ -57,6 +58,32 @@ function initlist(){
             console.log(err);
         }
     });
+=======
+function initlist() {
+    const db = cloud.database()
+    const _ = db.command
+    db.collection('advice')
+        // 获取反馈不为空的数据
+        .where({
+            advice: _.neq("")
+        })
+        // 实时推送
+        // 获取结果为 0 时需要清除浏览器缓存和 cookie
+        .watch({
+            onChange: res => {
+                console.log(res.docs);
+                // 处理日期对象显示异常
+                let list = res.docs.map(item => {
+                    item.adddue = new Date(item.adddue.$date);
+                    return item;
+                })
+                refreshlist(list)
+            },
+            onError: err => {
+                console.error(err);
+            }
+        })
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
 }
 
 /**
@@ -65,11 +92,15 @@ function initlist(){
  */
 function deladvice(id){
     if(confirm('是否要删除这个意见？')){
+<<<<<<< HEAD
         const tempimgs = advicelist[id].imgs;
+=======
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
         cloud.database().collection('advice').where({
             _id:id
         }).remove(
         function(err, res) {
+<<<<<<< HEAD
             if(tempimgs!=null && tempimgs.length!=0){
                 //删除图片
                 cloud.deleteFile({
@@ -79,6 +110,11 @@ function deladvice(id){
                       alert('删除成功！');
                     //   initlist()
                   });
+=======
+            let tempimgs = advicelist[id].imgs;
+            if(tempimgs!=null && tempimgs.length!=0){
+                //删除图片
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
             }
             else{
                 alert('删除成功！');
@@ -102,7 +138,11 @@ function cloudCheck(){
  * 重新渲染意见列表
  * @param Array list 意见列表
  */
+<<<<<<< HEAD
 async function refreshlist(list){
+=======
+function refreshlist(list){
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
     let el = document.getElementById("list");
     el.innerHTML="";
     advicelist = {};
@@ -131,17 +171,29 @@ async function refreshlist(list){
 
             for(let n in tempitem.imgs){
                 let img = document.createElement('img');
+<<<<<<< HEAD
                 img.src = await cloudtohttp(tempitem.imgs[n]);
                 img.setAttribute('onclick', 'previewnetimg("' + img.src + '")');
+=======
+                img.src = cloudtohttp(tempitem.imgs[n]);
+                img.setAttribute('onclick','previewnetimg("'+img.src+'")');
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
                 itemimages.appendChild(img);
             }
             listitem.appendChild(itemimages);
         }
 
+<<<<<<< HEAD
         // let itemdate = document.createElement('div');
         // itemdate.setAttribute('class','list-item-date');
         // itemdate.innerText = dateFormat("YYYY-mm-dd HH:MM",new Date(tempitem.adddue));
         // listitem.appendChild(itemdate);
+=======
+        let itemdate = document.createElement('div');
+        itemdate.setAttribute('class','list-item-date');
+        itemdate.innerText = dateFormat("YYYY-mm-dd HH:MM",new Date(tempitem.adddue));
+        listitem.appendChild(itemdate);
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
 
         let itemdel = document.createElement('div');
         itemdel.setAttribute('class','list-item-del');
@@ -290,6 +342,7 @@ function resetInput(){
  */
 function submittext(){
     let imgs=[];
+<<<<<<< HEAD
     console.log(imagearray);
     for(let item in imagearray){
         if(imagearray[item].upload!=true){
@@ -297,6 +350,15 @@ function submittext(){
         }
         imgs.push(imagearray[item].cloud);
     }
+=======
+    // console.log(imagearray);
+    // for(let item in imagearray){
+    //     if(imagearray[item].upload!=true){
+    //         return;
+    //     }
+    //     imgs.push(imagearray[item].cloud);
+    // }
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
     let number = document.getElementById('number').value;
     let advicetext = document.getElementById('advicetext').value;
     console.log(advicetext,number);
@@ -320,6 +382,7 @@ function submittext(){
  * @param {*} check 
  */
 function cloudupload(file,check){
+<<<<<<< HEAD
     cloud.uploadFile({
         cloudPath: 'advice/'+uid+'/'+file.lastModified+'-'+file.name,
         filePath: file
@@ -331,4 +394,7 @@ function cloudupload(file,check){
             submittext();
         }
     });
+=======
+    submittext();
+>>>>>>> 01608342063c756e0f19e4d68488f8e272de9e88
 }
